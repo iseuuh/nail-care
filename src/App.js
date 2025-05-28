@@ -1,8 +1,12 @@
-import React from "react";
-import Home from './pages/Home';
+import React from 'react';
+import BookingForm from './components/BookingForm';
 
 function App() {
-  return <Home />;
+  return (
+    <div className="App">
+      <BookingForm />
+    </div>
+  );
 }
 
-export default App;
+export default App; 

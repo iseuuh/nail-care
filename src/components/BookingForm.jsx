@@ -1,195 +1,196 @@
-// src/components/BookingForm.jsx
-import React, { useState } from "react";
-import { postReservation } from "../lib/api";
+import React, { useState } from 'react';
+import { postReservation } from '../lib/api';
 
-const services = [
-  "Vernis permanent",
-  "Pédicure",
-  "Nail Art",
-  "Gel",
-  "Soin des mains et doigts",
-];
-
-export default function BookingForm() {
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState({
-    service: "",
-    date: "",
-    time: "",
-    name: "",
-    phone: "",
-    email: "",
+const BookingForm = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    time: '',
+    service: '',
+    notes: ''
   });
-  const [submitted, setSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = e => {
-    setData({ ...data, [e.target.name]: e.target.value });
+  const [status, setStatus] = useState({
+    loading: false,
+    success: false,
+    error: null
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
-
-  const nextStep = () => setStep(s => s + 1);
-  const prevStep = () => setStep(s => s - 1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setStatus({ loading: true, success: false, error: null });
+
     try {
-      await postReservation(data);
-      setSubmitted(true);
-    } catch (err) {
-      console.error(err);
-      alert("Erreur API : " + err.message);
-    } finally {
-      setIsLoading(false);
+      await postReservation(formData);
+      setStatus({ loading: false, success: true, error: null });
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        date: '',
+        time: '',
+        service: '',
+        notes: ''
+      });
+    } catch (error) {
+      setStatus({ loading: false, success: false, error: 'Une erreur est survenue. Veuillez réessayer.' });
     }
   };
 
-  if (submitted) {
-    return (
-      <div className="bg-noir border border-gold rounded-xl p-4 sm:p-6 text-center text-rose shadow-lg max-w-md mx-auto">
-        <h3 className="text-xl sm:text-2xl font-bold mb-4">Merci pour votre réservation !</h3>
-        <p className="text-gold">Nous vous contacterons pour confirmer votre rendez-vous.</p>
-      </div>
-    );
-  }
-
   return (
-    <form
-      className="bg-noir border border-gold rounded-xl p-4 sm:p-6 shadow-lg max-w-md mx-auto"
-      onSubmit={handleSubmit}
-    >
-      <h3 className="text-lg sm:text-xl font-bold text-gold mb-4 sm:mb-6">Réservez votre rendez-vous</h3>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="px-6 py-8">
+          <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-8">
+            Réservation en ligne
+          </h2>
+          
+          {status.success && (
+            <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
+              Votre réservation a été enregistrée avec succès !
+            </div>
+          )}
 
-      {step === 1 && (
-        <div>
-          <label className="block mb-3 text-rose font-semibold">
-            Prestation souhaitée
-            <select
-              name="service"
-              value={data.service}
-              onChange={handleChange}
-              className="block w-full mt-2 p-2 rounded bg-noir text-gold border border-gold"
-              required
-            >
-              <option value="">Choisissez…</option>
-              {services.map((s, i) => (
-                <option key={i} value={s}>{s}</option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={nextStep}
-            disabled={!data.service}
-            className="w-full sm:w-auto bg-gold text-noir py-2 sm:py-3 px-6 sm:px-8 rounded-full shadow-lg hover:bg-rose transition disabled:opacity-50"
-          >
-            Suivant
-          </button>
-        </div>
-      )}
+          {status.error && (
+            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+              {status.error}
+            </div>
+          )}
 
-      {step === 2 && (
-        <div>
-          <label className="block mb-3 text-rose font-semibold">
-            Date
-            <input
-              type="date"
-              name="date"
-              value={data.date}
-              onChange={handleChange}
-              className="block w-full mt-2 p-2 rounded bg-noir text-gold border border-gold"
-              required
-              min={new Date().toISOString().split('T')[0]}
-            />
-          </label>
-          <label className="block mb-3 text-rose font-semibold">
-            Heure
-            <input
-              type="time"
-              name="time"
-              value={data.time}
-              onChange={handleChange}
-              className="block w-full mt-2 p-2 rounded bg-noir text-gold border border-gold"
-              required
-            />
-          </label>
-          <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
-            <button
-              type="button"
-              onClick={prevStep}
-              className="text-rose underline"
-            >
-              Retour
-            </button>
-            <button
-              type="button"
-              onClick={nextStep}
-              disabled={!data.date || !data.time}
-              className="w-full sm:w-auto bg-gold text-noir py-2 sm:py-3 px-6 sm:px-8 rounded-full shadow-lg hover:bg-rose transition disabled:opacity-50"
-            >
-              Suivant
-            </button>
-          </div>
-        </div>
-      )}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Nom complet
+              </label>
+              <input
+                type="text"
+                name="name"
+                id="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
 
-      {step === 3 && (
-        <div>
-          <label className="block mb-3 text-rose font-semibold">
-            Nom complet
-            <input
-              type="text"
-              name="name"
-              value={data.name}
-              onChange={handleChange}
-              className="block w-full mt-2 p-2 rounded bg-noir text-gold border border-gold"
-              required
-              autoComplete="name"
-            />
-          </label>
-          <label className="block mb-3 text-rose font-semibold">
-            Téléphone
-            <input
-              type="tel"
-              name="phone"
-              value={data.phone}
-              onChange={handleChange}
-              className="block w-full mt-2 p-2 rounded bg-noir text-gold border border-gold"
-              required
-              pattern="[0-9]{10}"
-              title="Veuillez entrer un numéro de téléphone valide (10 chiffres)"
-              autoComplete="tel"
-            />
-          </label>
-          <label className="block mb-3 text-rose font-semibold">
-            Email (facultatif)
-            <input
-              type="email"
-              name="email"
-              value={data.email}
-              onChange={handleChange}
-              className="block w-full mt-2 p-2 rounded bg-noir text-gold border border-gold"
-              autoComplete="email"
-            />
-          </label>
-          <div className="flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
-            <button
-              type="button"
-              onClick={prevStep}
-              className="text-rose underline"
-            >
-              Retour
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full sm:w-auto bg-gold text-noir py-2 sm:py-3 px-6 sm:px-8 rounded-full shadow-lg hover:bg-rose transition disabled:opacity-50"
-            >
-              {isLoading ? "Envoi..." : "Réserver"}
-            </button>
-          </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Téléphone
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                id="phone"
+                required
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                Date
+              </label>
+              <input
+                type="date"
+                name="date"
+                id="date"
+                required
+                value={formData.date}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+                Heure
+              </label>
+              <input
+                type="time"
+                name="time"
+                id="time"
+                required
+                value={formData.time}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="service" className="block text-sm font-medium text-gray-700">
+                Service
+              </label>
+              <select
+                name="service"
+                id="service"
+                required
+                value={formData.service}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              >
+                <option value="">Sélectionnez un service</option>
+                <option value="manucure">Manucure</option>
+                <option value="pedicure">Pédicure</option>
+                <option value="nail-art">Nail Art</option>
+                <option value="gel">Pose de gel</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                Notes supplémentaires
+              </label>
+              <textarea
+                name="notes"
+                id="notes"
+                rows="3"
+                value={formData.notes}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+              />
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={status.loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 disabled:opacity-50"
+              >
+                {status.loading ? 'Envoi en cours...' : 'Réserver'}
+              </button>
+            </div>
+          </form>
         </div>
-      )}
-    </form>
+      </div>
+    </div>
   );
-}
+};
+
+export default BookingForm; 
