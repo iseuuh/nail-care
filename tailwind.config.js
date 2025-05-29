@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
-    "./node_modules/flowbite-react/**/*.js"
+    "./public/index.html"
   ],
   theme: {
     extend: {
@@ -25,9 +25,10 @@ module.exports = {
         marble: '#EFEAE6',
       },
       fontFamily: {
-        sans: ["Urbanist", "Playfair Display", "sans-serif"],
+        sans: ["Urbanist", "sans-serif"],
+        serif: ["Playfair Display", "serif"],
       },
     },
   },
-  plugins: [require('flowbite/plugin')],
+  plugins: [],
 }
